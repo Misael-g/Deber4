@@ -4,27 +4,22 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, useColorScheme } from "react-native";
 import "react-native-reanimated";
-import { useColorScheme } from "../../hooks/use-color-scheme";
 import { container } from "../src/di/container";
-import { useAuth } from "../src/presentation/hooks/useAuth"; // ← NUEVO
+import { useAuth } from "../src/presentation/hooks/useAuth";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-BoldItalic.ttf"),
-  });
   const [containerReady, setContainerReady] = useState(false);
-  const { user, loading: authLoading } = useAuth(); // ← NUEVO
-  const segments = useSegments(); // ← NUEVO
-  const router = useRouter(); // ← NUEVO
+  const { user, loading: authLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
     const initContainer = async () => {
@@ -38,28 +33,26 @@ export default function RootLayout() {
     initContainer();
   }, []);
 
-  // ← NUEVO: Protección de rutas
+  // Protección de rutas
   useEffect(() => {
     if (!containerReady || authLoading) return;
     const inAuthGroup =
       segments[0] === "(tabs)" &&
       (segments[1] === "login" || segments[1] === "register");
     if (!user && !inAuthGroup) {
-      // Usuario no autenticado intenta acceder a ruta protegida
       router.replace("/(tabs)/login");
     } else if (user && inAuthGroup) {
-      // Usuario autenticado intenta acceder a login/register
       router.replace("/(tabs)/todos");
     }
   }, [user, segments, containerReady, authLoading]);
 
   useEffect(() => {
-    if (loaded && containerReady && !authLoading) {
+    if (containerReady && !authLoading) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, containerReady, authLoading]);
+  }, [containerReady, authLoading]);
 
-  if (!loaded || !containerReady || authLoading) {
+  if (!containerReady || authLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />

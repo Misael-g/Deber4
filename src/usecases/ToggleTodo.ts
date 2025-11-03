@@ -1,1 +1,18 @@
-import type { TodoRepository } from '../domain/repositories/TodoRepository';\n\nexport function makeToggleTodo(todoRepo: TodoRepository) {\n  return async function toggleTodo(id: string, done: boolean) {\n    return await todoRepo.toggle(id, done);\n  }\n}\n
+import { Todo } from "../domain/entities/Todo";
+import { TodoRepository } from "../domain/repositories/TodoRepository";
+
+export class ToggleTodo {
+  constructor(private repository: TodoRepository) {}
+
+  async execute(id: string): Promise<Todo> {
+    const todo = await this.repository.getById(id);
+    if (!todo) {
+      throw new Error("Todo not found");
+    }
+
+    return await this.repository.update({
+      id,
+      completed: !todo.completed,
+    });
+  }
+}

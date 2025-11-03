@@ -1,1 +1,9 @@
-import type { TodoRepository } from '../domain/repositories/TodoRepository';\n\nexport function makeDeleteTodo(todoRepo: TodoRepository) {\n  return async function deleteTodo(id: string) {\n    return await todoRepo.delete(id);\n  }\n}\n
+import { TodoRepository } from "../domain/repositories/TodoRepository";
+
+export class DeleteTodo {
+  constructor(private repository: TodoRepository) {}
+
+  async execute(id: string): Promise<void> {
+    return await this.repository.delete(id);
+  }
+}

@@ -5,6 +5,8 @@ import { CreateTodo } from "../domain/usecases/CreateTodo";
 import { DeleteTodo } from "../domain/usecases/DeleteTodo";
 import { GetAllTodos } from "../domain/usecases/GetAllTodos";
 import { UpdateTodo } from "../domain/usecases/UpdateTodo";
+import { ToggleTodo } from "../usecases/ToggleTodo"; // ← AGREGAR
+
 
 // ===== NUEVOS IMPORTS DE AUTH ===== (Agregar al inicio)
 import { FirebaseAuthDataSource } from "../data/datasources/FirebaseAuthDataSource";
@@ -28,6 +30,7 @@ class DIContainer {
     }
     return DIContainer.instance;
   }
+  private _toggleTodo?: ToggleTodo; // ← AGREGAR
 
   // ===== EXISTENTES DE TODOS =====
   private _todoDataSource?: FirebaseTodoDataSource;
@@ -135,6 +138,15 @@ class DIContainer {
     }
     return this._getCurrentUser;
   }
+
+    // ← AGREGAR ESTE GETTER
+  get toggleTodo(): ToggleTodo {
+    if (!this._toggleTodo) {
+      this._toggleTodo = new ToggleTodo(this.todoRepository);
+    }
+    return this._toggleTodo;
+  }
+  
 }
 
 export const container = DIContainer.getInstance();
