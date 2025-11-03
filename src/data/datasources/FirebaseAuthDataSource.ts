@@ -4,9 +4,10 @@ import {
   signOut,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   updateProfile,
+  sendPasswordResetEmail,
   User as FirebaseUser,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../../FirebaseConfig";
 import { User } from "../../domain/entities/User";
 
@@ -57,13 +58,13 @@ export class FirebaseAuthDataSource {
       };
     } catch (error: any) {
       console.error("Error registering user:", error);
-      // Mensajes de error más amigables
+      // 🔥 Mensajes de error mejorados
       if (error.code === "auth/email-already-in-use") {
-        throw new Error("Este email ya está registrado");
+        throw new Error("Este email ya está registrado. Intenta iniciar sesión.");
       } else if (error.code === "auth/invalid-email") {
-        throw new Error("Email inválido");
+        throw new Error("El formato del email no es válido");
       } else if (error.code === "auth/weak-password") {
-        throw new Error("La contraseña es muy débil");
+        throw new Error("La contraseña debe tener al menos 6 caracteres");
       }
       throw new Error(error.message || "Error al registrar usuario");
     }
@@ -99,7 +100,7 @@ export class FirebaseAuthDataSource {
       } else if (error.code === "auth/wrong-password") {
         throw new Error("Contraseña incorrecta");
       } else if (error.code === "auth/invalid-credential") {
-        throw new Error("Credenciales inválidas");
+        throw new Error("Email o contraseña incorrectos");
       }
       throw new Error(error.message || "Error al iniciar sesión");
     }
@@ -137,5 +138,46 @@ export class FirebaseAuthDataSource {
         callback(null);
       }
     });
+  }
+
+  // 🆕 ===== ACTUALIZAR PERFIL =====
+  async updateUserProfile(displayName: string): Promise<User> {
+    try {
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) {
+        throw new Error("No hay usuario autenticado");
+      }
+
+      // 1. Actualizar en Firebase Auth
+      await updateProfile(firebaseUser, {
+        displayName,
+      });
+
+      // 2. Actualizar en Firestore
+      await updateDoc(doc(db, "users", firebaseUser.uid), {
+        displayName,
+      });
+
+      // 3. Retornar usuario actualizado
+      return this.mapFirebaseUserToUser(firebaseUser);
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      throw new Error(error.message || "Error al actualizar perfil");
+    }
+  }
+
+  // 🆕 ===== ENVIAR EMAIL DE RECUPERACIÓN =====
+  async sendPasswordReset(email: string): Promise<void> {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error: any) {
+      console.error("Error sending password reset:", error);
+      if (error.code === "auth/user-not-found") {
+        throw new Error("No existe una cuenta con este email");
+      } else if (error.code === "auth/invalid-email") {
+        throw new Error("El formato del email no es válido");
+      }
+      throw new Error(error.message || "Error al enviar email de recuperación");
+    }
   }
 }

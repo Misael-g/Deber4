@@ -70,6 +70,37 @@ export const useAuth = () => {
     }
   };
 
+  // 🆕 NUEVO: Actualizar perfil
+  const updateUserProfile = async (displayName: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedUser = await container.updateProfile.execute(displayName);
+      setUser(updatedUser);
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🆕 NUEVO: Enviar email de recuperación
+  const sendPasswordReset = async (email: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await container.sendPasswordReset.execute(email);
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     loading,
@@ -77,6 +108,8 @@ export const useAuth = () => {
     register,
     login,
     logout,
+    updateUserProfile, // 🆕 NUEVO
+    sendPasswordReset, // 🆕 NUEVO
     isAuthenticated: !!user,
   };
 };

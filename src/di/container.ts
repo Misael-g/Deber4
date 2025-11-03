@@ -7,13 +7,15 @@ import { GetAllTodos } from "../usecases/GetAllTodos";
 import { UpdateTodo } from "../usecases/UpdateTodo";  
 import { ToggleTodo } from "../usecases/ToggleTodo";
 
-// ===== NUEVOS IMPORTS DE AUTH =====
+// ===== AUTH IMPORTS =====
 import { FirebaseAuthDataSource } from "../data/datasources/FirebaseAuthDataSource";
 import { AuthRepositoryImpl } from "../data/repositories/AuthRepositoryImpl";
 import { RegisterUser } from "../usecases/RegisterUser";  
 import { LoginUser } from "../usecases/LoginUser";  
 import { LogoutUser } from "../usecases/LogoutUser";  
 import { GetCurrentUser } from "../usecases/GetCurrentUser";  
+import { UpdateProfile } from "../usecases/UpdateProfile"; // 🆕 NUEVO
+import { SendPasswordReset } from "../usecases/SendPasswordReset"; // 🆕 NUEVO
 import { AuthRepository } from "../domain/repositories/AuthRepository";
 
 class DIContainer {
@@ -37,7 +39,7 @@ class DIContainer {
   private _getAllTodos?: GetAllTodos;
   private _updateTodo?: UpdateTodo;
   private _deleteTodo?: DeleteTodo;
-  private _toggleTodo?: ToggleTodo; // ← AGREGAR ESTA LÍNEA
+  private _toggleTodo?: ToggleTodo;
 
   // ===== PROPIEDADES DE AUTH =====
   private _authDataSource?: FirebaseAuthDataSource;
@@ -46,6 +48,8 @@ class DIContainer {
   private _loginUser?: LoginUser;
   private _logoutUser?: LogoutUser;
   private _getCurrentUser?: GetCurrentUser;
+  private _updateProfile?: UpdateProfile; // 🆕 NUEVO
+  private _sendPasswordReset?: SendPasswordReset; // 🆕 NUEVO
 
   async initialize(): Promise<void> {
     // Initialize Firebase and other services if needed
@@ -143,6 +147,21 @@ class DIContainer {
       this._getCurrentUser = new GetCurrentUser(this.authRepository);
     }
     return this._getCurrentUser;
+  }
+
+  // 🆕 NUEVOS GETTERS
+  get updateProfile(): UpdateProfile {
+    if (!this._updateProfile) {
+      this._updateProfile = new UpdateProfile(this.authRepository);
+    }
+    return this._updateProfile;
+  }
+
+  get sendPasswordReset(): SendPasswordReset {
+    if (!this._sendPasswordReset) {
+      this._sendPasswordReset = new SendPasswordReset(this.authRepository);
+    }
+    return this._sendPasswordReset;
   }
 }
 

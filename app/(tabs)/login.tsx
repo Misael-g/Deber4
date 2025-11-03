@@ -33,6 +33,11 @@ export default function LoginScreen() {
     router.push("/(tabs)/register");
   };
 
+  // 🆕 NUEVO: Ir a recuperar contraseña
+  const goToForgotPassword = () => {
+    router.push("/(tabs)/forgot-password");
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -63,6 +68,16 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             secureTextEntry
           />
+
+          {/* 🆕 NUEVO: Enlace "Olvidé mi contraseña" */}
+          <TouchableOpacity 
+            onPress={goToForgotPassword} 
+            style={styles.forgotPasswordButton}
+          >
+            <Text style={styles.forgotPasswordText}>
+              ¿Olvidaste tu contraseña?
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -120,6 +135,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#ddd",
+  },
+  // 🆕 NUEVOS ESTILOS
+  forgotPasswordButton: {
+    alignSelf: "flex-end",
+    marginBottom: 20,
+    paddingVertical: 5,
+  },
+  forgotPasswordText: {
+    color: "#007AFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
   button: {
     backgroundColor: "#007AFF",

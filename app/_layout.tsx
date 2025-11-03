@@ -31,20 +31,23 @@ export default function RootLayout() {
     initContainer();
   }, []);
 
- // Protección de rutas 
-useEffect(() => {
-  if (!containerReady || authLoading) return;
-  
-  // Obtener la ruta actual de forma segura
-  const currentRoute = segments.join("/");
-  const isAuthRoute = currentRoute.includes("login") || currentRoute.includes("register");
-  
-  if (!user && !isAuthRoute) {
-    router.replace("/(tabs)/login");
-  } else if (user && isAuthRoute) {
-    router.replace("/(tabs)/todos");
-  }
-}, [user, segments, containerReady, authLoading]);
+  // Protección de rutas
+  useEffect(() => {
+    if (!containerReady || authLoading) return;
+    
+    // Obtener la ruta actual de forma segura
+    const currentRoute = segments.join("/");
+    const isAuthRoute = 
+      currentRoute.includes("login") || 
+      currentRoute.includes("register") ||
+      currentRoute.includes("forgot-password"); // 🆕 NUEVO
+    
+    if (!user && !isAuthRoute) {
+      router.replace("/(tabs)/login");
+    } else if (user && isAuthRoute) {
+      router.replace("/(tabs)/todos");
+    }
+  }, [user, segments, containerReady, authLoading]);
 
   useEffect(() => {
     if (containerReady && !authLoading) {
@@ -65,7 +68,16 @@ useEffect(() => {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)/login" />
         <Stack.Screen name="(tabs)/register" />
+        <Stack.Screen name="(tabs)/forgot-password" /> {/* 🆕 NUEVO */}
         <Stack.Screen name="(tabs)/todos" />
+        <Stack.Screen 
+          name="(tabs)/profile" 
+          options={{ 
+            headerShown: true,
+            title: "Mi Perfil",
+            headerBackTitle: "Volver"
+          }} 
+        /> {/* 🆕 NUEVO */}
       </Stack>
     </ThemeProvider>
   );
