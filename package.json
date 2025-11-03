@@ -1,0 +1,22 @@
+{
+  "name": "deber4-esqueleto",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'No build configured'",
+    "start": "expo start"
+  },
+  "dependencies": {
+    "expo": "^54.0.21",
+    "expo-router": "~6.0.14",
+    "firebase": "^12.5.0",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "typescript": "~5.9.2"
+  }
+}

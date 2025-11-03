@@ -1,0 +1,1 @@
+// Estilos placeholder - adaptar según framework (CSS, styled-components, RN)\nexport const styles = {\n  container: { padding: 16 },\n};\n

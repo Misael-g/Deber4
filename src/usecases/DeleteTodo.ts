@@ -1,0 +1,1 @@
+import type { TodoRepository } from '../domain/repositories/TodoRepository';\n\nexport function makeDeleteTodo(todoRepo: TodoRepository) {\n  return async function deleteTodo(id: string) {\n    return await todoRepo.delete(id);\n  }\n}\n

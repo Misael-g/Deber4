@@ -1,0 +1,1 @@
+import type { TodoRepository } from '../domain/repositories/TodoRepository';\n\nexport function makeToggleTodo(todoRepo: TodoRepository) {\n  return async function toggleTodo(id: string, done: boolean) {\n    return await todoRepo.toggle(id, done);\n  }\n}\n

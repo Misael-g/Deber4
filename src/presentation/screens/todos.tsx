@@ -1,0 +1,2 @@
+import React from 'react';\nimport { useAuth } from '../hooks/useAuth';\nimport { useTodos } from '../hooks/useTodos';\n\nexport default function TodosScreen() {\n  const { user } = useAuth();\n  const { todos } = useTodos(user ? user.uid : null);
+\n  return (\n    <div>\n      <h2>Todos screen</h2>\n      <div>User: {user?.email ?? 'no user'}</div>\n      <ul>\n        {todos.map(t => (\n          <li key={t.id}>{t.title} - {t.done ? 'done' : 'open'}</li>\n        ))}\n      </ul>\n    </div>\n  );\n}\n
