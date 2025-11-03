@@ -1,20 +1,19 @@
 import { FirebaseTodoDataSource } from "../data/datasources/FirebaseTodoDataSource";
 import { TodoRepositoryFirebaseImpl } from "../data/repositories/TodoRepositoryFirebaseImpl";
 import { TodoRepository } from "../domain/repositories/TodoRepository";
-import { CreateTodo } from "../domain/usecases/CreateTodo";
-import { DeleteTodo } from "../domain/usecases/DeleteTodo";
-import { GetAllTodos } from "../domain/usecases/GetAllTodos";
-import { UpdateTodo } from "../domain/usecases/UpdateTodo";
-import { ToggleTodo } from "../usecases/ToggleTodo"; // ← AGREGAR
+import { CreateTodo } from "../usecases/CreateTodo"; 
+import { DeleteTodo } from "../usecases/DeleteTodo";  
+import { GetAllTodos } from "../usecases/GetAllTodos";  
+import { UpdateTodo } from "../usecases/UpdateTodo";  
+import { ToggleTodo } from "../usecases/ToggleTodo";
 
-
-// ===== NUEVOS IMPORTS DE AUTH ===== (Agregar al inicio)
+// ===== NUEVOS IMPORTS DE AUTH =====
 import { FirebaseAuthDataSource } from "../data/datasources/FirebaseAuthDataSource";
 import { AuthRepositoryImpl } from "../data/repositories/AuthRepositoryImpl";
-import { RegisterUser } from "../domain/usecases/RegisterUser";
-import { LoginUser } from "../domain/usecases/LoginUser";
-import { LogoutUser } from "../domain/usecases/LogoutUser";
-import { GetCurrentUser } from "../domain/usecases/GetCurrentUser";
+import { RegisterUser } from "../usecases/RegisterUser";  
+import { LoginUser } from "../usecases/LoginUser";  
+import { LogoutUser } from "../usecases/LogoutUser";  
+import { GetCurrentUser } from "../usecases/GetCurrentUser";  
 import { AuthRepository } from "../domain/repositories/AuthRepository";
 
 class DIContainer {
@@ -30,17 +29,17 @@ class DIContainer {
     }
     return DIContainer.instance;
   }
-  private _toggleTodo?: ToggleTodo; // ← AGREGAR
 
-  // ===== EXISTENTES DE TODOS =====
+  // ===== PROPIEDADES DE TODOS =====
   private _todoDataSource?: FirebaseTodoDataSource;
   private _todoRepository?: TodoRepository;
   private _createTodo?: CreateTodo;
   private _getAllTodos?: GetAllTodos;
   private _updateTodo?: UpdateTodo;
   private _deleteTodo?: DeleteTodo;
+  private _toggleTodo?: ToggleTodo; // ← AGREGAR ESTA LÍNEA
 
-  // ===== NUEVOS DE AUTH =====
+  // ===== PROPIEDADES DE AUTH =====
   private _authDataSource?: FirebaseAuthDataSource;
   private _authRepository?: AuthRepository;
   private _registerUser?: RegisterUser;
@@ -53,7 +52,7 @@ class DIContainer {
     await this.todoDataSource.initialize();
   }
 
-  // ===== GETTERS EXISTENTES DE TODOS =====
+  // ===== GETTERS DE TODOS =====
   get todoDataSource(): FirebaseTodoDataSource {
     if (!this._todoDataSource) {
       this._todoDataSource = new FirebaseTodoDataSource();
@@ -96,7 +95,14 @@ class DIContainer {
     return this._deleteTodo;
   }
 
-  // ===== NUEVOS GETTERS DE AUTH =====
+  get toggleTodo(): ToggleTodo {
+    if (!this._toggleTodo) {
+      this._toggleTodo = new ToggleTodo(this.todoRepository);
+    }
+    return this._toggleTodo;
+  }
+
+  // ===== GETTERS DE AUTH =====
   get authDataSource(): FirebaseAuthDataSource {
     if (!this._authDataSource) {
       this._authDataSource = new FirebaseAuthDataSource();
@@ -138,15 +144,6 @@ class DIContainer {
     }
     return this._getCurrentUser;
   }
-
-    // ← AGREGAR ESTE GETTER
-  get toggleTodo(): ToggleTodo {
-    if (!this._toggleTodo) {
-      this._toggleTodo = new ToggleTodo(this.todoRepository);
-    }
-    return this._toggleTodo;
-  }
-  
 }
 
 export const container = DIContainer.getInstance();
