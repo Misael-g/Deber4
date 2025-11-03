@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   DarkTheme,
   DefaultTheme,
@@ -6,9 +6,7 @@ import {
 } from "@react-navigation/native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
 import { ActivityIndicator, View, useColorScheme } from "react-native";
-import "react-native-reanimated";
 import { container } from "../src/di/container";
 import { useAuth } from "../src/presentation/hooks/useAuth";
 
@@ -33,18 +31,20 @@ export default function RootLayout() {
     initContainer();
   }, []);
 
-  // Protección de rutas
-  useEffect(() => {
-    if (!containerReady || authLoading) return;
-    const inAuthGroup =
-      segments[0] === "(tabs)" &&
-      (segments[1] === "login" || segments[1] === "register");
-    if (!user && !inAuthGroup) {
-      router.replace("/(tabs)/login");
-    } else if (user && inAuthGroup) {
-      router.replace("/(tabs)/todos");
-    }
-  }, [user, segments, containerReady, authLoading]);
+ // Protección de rutas 
+useEffect(() => {
+  if (!containerReady || authLoading) return;
+  
+  // Obtener la ruta actual de forma segura
+  const currentRoute = segments.join("/");
+  const isAuthRoute = currentRoute.includes("login") || currentRoute.includes("register");
+  
+  if (!user && !isAuthRoute) {
+    router.replace("/(tabs)/login");
+  } else if (user && isAuthRoute) {
+    router.replace("/(tabs)/todos");
+  }
+}, [user, segments, containerReady, authLoading]);
 
   useEffect(() => {
     if (containerReady && !authLoading) {
