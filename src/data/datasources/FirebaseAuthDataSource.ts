@@ -8,8 +8,12 @@ import {
   User as FirebaseUser,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, db } from "../../../FirebaseConfig";
 import { User } from "../../domain/entities/User";
+
+// 🔑 CONSTANTE PARA LA KEY DE ASYNCSTORAGE
+const USER_STORAGE_KEY = "@TodoApp:user";
 
 export class FirebaseAuthDataSource {
   // ===== MÉTODO PRIVADO: CONVERTIR FIREBASEUSER A USER =====
@@ -20,6 +24,42 @@ export class FirebaseAuthDataSource {
       displayName: firebaseUser.displayName || "Usuario",
       createdAt: new Date(firebaseUser.metadata.creationTime || Date.now()),
     };
+  }
+
+  // 🆕 ===== GUARDAR USUARIO EN ASYNCSTORAGE =====
+  private async saveUserToStorage(user: User): Promise<void> {
+    try {
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    } catch (error) {
+      console.error("Error saving user to storage:", error);
+    }
+  }
+
+  // 🆕 ===== OBTENER USUARIO DE ASYNCSTORAGE =====
+  async getUserFromStorage(): Promise<User | null> {
+    try {
+      const userJson = await AsyncStorage.getItem(USER_STORAGE_KEY);
+      if (!userJson) return null;
+      
+      const userData = JSON.parse(userJson);
+      // Convertir la fecha de string a Date
+      return {
+        ...userData,
+        createdAt: new Date(userData.createdAt),
+      };
+    } catch (error) {
+      console.error("Error reading user from storage:", error);
+      return null;
+    }
+  }
+
+  // 🆕 ===== ELIMINAR USUARIO DE ASYNCSTORAGE =====
+  private async removeUserFromStorage(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+    } catch (error) {
+      console.error("Error removing user from storage:", error);
+    }
   }
 
   // ===== REGISTRO DE USUARIO =====
@@ -49,16 +89,20 @@ export class FirebaseAuthDataSource {
         createdAt: new Date(),
       });
 
-      // 4. Retornar usuario mapeado
-      return {
+      // 4. Crear objeto User
+      const user: User = {
         id: firebaseUser.uid,
         email,
         displayName,
         createdAt: new Date(),
       };
+
+      // 🆕 5. Guardar en AsyncStorage
+      await this.saveUserToStorage(user);
+
+      return user;
     } catch (error: any) {
       console.error("Error registering user:", error);
-      // 🔥 Mensajes de error mejorados
       if (error.code === "auth/email-already-in-use") {
         throw new Error("Este email ya está registrado. Intenta iniciar sesión.");
       } else if (error.code === "auth/invalid-email") {
@@ -85,16 +129,20 @@ export class FirebaseAuthDataSource {
       const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
       const userData = userDoc.data();
 
-      // 3. Retornar usuario completo
-      return {
+      // 3. Crear objeto User
+      const user: User = {
         id: firebaseUser.uid,
         email: firebaseUser.email || "",
         displayName: userData?.displayName || firebaseUser.displayName || "Usuario",
         createdAt: userData?.createdAt?.toDate() || new Date(),
       };
+
+      // 🆕 4. Guardar en AsyncStorage
+      await this.saveUserToStorage(user);
+
+      return user;
     } catch (error: any) {
       console.error("Error logging in:", error);
-      // Mensajes de error más amigables
       if (error.code === "auth/user-not-found") {
         throw new Error("Usuario no encontrado");
       } else if (error.code === "auth/wrong-password") {
@@ -110,6 +158,8 @@ export class FirebaseAuthDataSource {
   async logout(): Promise<void> {
     try {
       await signOut(auth);
+      // 🆕 Eliminar de AsyncStorage
+      await this.removeUserFromStorage();
     } catch (error: any) {
       console.error("Error logging out:", error);
       throw new Error(error.message || "Error al cerrar sesión");
@@ -120,8 +170,15 @@ export class FirebaseAuthDataSource {
   async getCurrentUser(): Promise<User | null> {
     try {
       const firebaseUser = auth.currentUser;
-      if (!firebaseUser) return null;
-      return this.mapFirebaseUserToUser(firebaseUser);
+      if (!firebaseUser) {
+        // 🆕 Si no hay usuario en Firebase, intentar obtener de AsyncStorage
+        return await this.getUserFromStorage();
+      }
+      
+      const user = this.mapFirebaseUserToUser(firebaseUser);
+      // 🆕 Actualizar AsyncStorage con los datos más recientes
+      await this.saveUserToStorage(user);
+      return user;
     } catch (error) {
       console.error("Error getting current user:", error);
       return null;
@@ -130,17 +187,21 @@ export class FirebaseAuthDataSource {
 
   // ===== OBSERVAR CAMBIOS DE AUTENTICACIÓN =====
   onAuthStateChanged(callback: (user: User | null) => void): () => void {
-    // Retorna función de desuscripción
-    return firebaseOnAuthStateChanged(auth, (firebaseUser) => {
+    return firebaseOnAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        callback(this.mapFirebaseUserToUser(firebaseUser));
+        const user = this.mapFirebaseUserToUser(firebaseUser);
+        // 🆕 Guardar en AsyncStorage cuando hay cambios
+        await this.saveUserToStorage(user);
+        callback(user);
       } else {
+        // 🆕 Limpiar AsyncStorage cuando se cierra sesión
+        await this.removeUserFromStorage();
         callback(null);
       }
     });
   }
 
-  // 🆕 ===== ACTUALIZAR PERFIL =====
+  // ===== ACTUALIZAR PERFIL =====
   async updateUserProfile(displayName: string): Promise<User> {
     try {
       const firebaseUser = auth.currentUser;
@@ -158,15 +219,20 @@ export class FirebaseAuthDataSource {
         displayName,
       });
 
-      // 3. Retornar usuario actualizado
-      return this.mapFirebaseUserToUser(firebaseUser);
+      // 3. Crear objeto User actualizado
+      const user = this.mapFirebaseUserToUser(firebaseUser);
+
+      // 🆕 4. Actualizar AsyncStorage
+      await this.saveUserToStorage(user);
+
+      return user;
     } catch (error: any) {
       console.error("Error updating profile:", error);
       throw new Error(error.message || "Error al actualizar perfil");
     }
   }
 
-  // 🆕 ===== ENVIAR EMAIL DE RECUPERACIÓN =====
+  // ===== ENVIAR EMAIL DE RECUPERACIÓN =====
   async sendPasswordReset(email: string): Promise<void> {
     try {
       await sendPasswordResetEmail(auth, email);

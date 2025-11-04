@@ -7,12 +7,32 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Observar cambios de autenticación
+  // 🆕 Cargar usuario desde AsyncStorage al iniciar
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        // Intentar obtener usuario guardado en AsyncStorage
+        const storedUser = await container.authRepository.getCurrentUser();
+        if (storedUser) {
+          setUser(storedUser);
+        }
+      } catch (err) {
+        console.error("Error initializing auth:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  // Observar cambios de autenticación en Firebase
   useEffect(() => {
     const unsubscribe = container.authRepository.onAuthStateChanged((authUser) => {
       setUser(authUser);
       setLoading(false);
     });
+    
     // Cleanup: desuscribirse cuando el componente se desmonte
     return () => unsubscribe();
   }, []);
@@ -70,7 +90,6 @@ export const useAuth = () => {
     }
   };
 
-  // 🆕 NUEVO: Actualizar perfil
   const updateUserProfile = async (displayName: string): Promise<boolean> => {
     try {
       setLoading(true);
@@ -86,7 +105,6 @@ export const useAuth = () => {
     }
   };
 
-  // 🆕 NUEVO: Enviar email de recuperación
   const sendPasswordReset = async (email: string): Promise<boolean> => {
     try {
       setLoading(true);
@@ -108,8 +126,8 @@ export const useAuth = () => {
     register,
     login,
     logout,
-    updateUserProfile, // 🆕 NUEVO
-    sendPasswordReset, // 🆕 NUEVO
+    updateUserProfile,
+    sendPasswordReset,
     isAuthenticated: !!user,
   };
 };

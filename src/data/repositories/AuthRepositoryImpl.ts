@@ -22,6 +22,7 @@ export class AuthRepositoryImpl implements AuthRepository {
   }
 
   async getCurrentUser(): Promise<User | null> {
+    // 🆕 Ahora también verifica AsyncStorage
     return this.dataSource.getCurrentUser();
   }
 
@@ -29,12 +30,10 @@ export class AuthRepositoryImpl implements AuthRepository {
     return this.dataSource.onAuthStateChanged(callback);
   }
 
-  // 🆕 NUEVO: Actualizar perfil
   async updateProfile(displayName: string): Promise<User> {
     return this.dataSource.updateUserProfile(displayName);
   }
 
-  // 🆕 NUEVO: Recuperar contraseña
   async sendPasswordReset(email: string): Promise<void> {
     return this.dataSource.sendPasswordReset(email);
   }
