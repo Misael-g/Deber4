@@ -9,6 +9,16 @@
       "expo-router"
     ],
     "scheme": "deber4",
-    "platforms": ["ios", "android", "web"]
+    "platforms": ["ios", "android", "web"],
+    "android": {
+      "package": "com.misaelg.todoapp",
+      "versionCode": 1,
+      "permissions": []
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5569150b-5e8b-4578-aeda-4af9401dc69e"
+      }
+    }
   }
 }
