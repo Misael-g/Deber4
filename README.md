@@ -1,1 +1,8 @@
-# Proyecto - Arquitectura esqueleto\n\nEste repositorio contiene un esqueleto de proyecto que sigue la arquitectura mostrada por el usuario.\n\nEstructura creada (resumen):\n- app/ (UI - pantallas)\n- src/data (datasources, repositories impl)\n- src/domain (entidades, interfaces de repos)\n- src/usecases (casos de uso)\n- src/presentation (hooks, pantallas)\n\nSiguientes pasos sugeridos:\n- Implementar lógica en datasources y usecases\n- Conectar Firebase y valores de configuración\n- Agregar tests y lint/tsconfig\n
+📝 TodoApp - Clean Architecture
+Una aplicación móvil de gestión de tareas construida con React Native, Expo, Firebase y Clean Architecture.
+🚀 Características
+
+✅ Autenticación completa: Registro, login, logout
+🔐 Recuperación de contraseña via email
+👤 Gestión de perfil: Actualizar nombre de usuario
+📋 CRUD de tareas: Crear, leer, actualizar, eliminar tareas
